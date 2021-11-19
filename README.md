@@ -1,2 +1,2 @@
 # Snake-game-in-JS
-hello
+* Hello, this is my Snake game :snake:
