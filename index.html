@@ -17,9 +17,9 @@
         }
     
         .wrapper{
-				position: relative;
-				margin-top: 100px;
-			}
+		position: relative;
+		margin-top: 100px;
+	}
 
         canvas {
             border: 10px solid #f7347a;
@@ -42,53 +42,53 @@
         }
 
         h4 {
-                    margin-top: 0;
-                    font-weight: bold;
-                    color:white;
-                }
+		margin-top: 0;
+		font-weight: bold;
+		color:white;
+	    }
 
         /* alerts */
         .alerts {
-			position: absolute;
-			width: 100%;
-			display: flex;
-			justify-content: center;
-			top: 185px;
-		}
+		position: absolute;
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		top: 185px;
+	}
 
-			.alerts div{
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				width: 400px;
-				height: 200px;
-				background-color: rgba(255, 191, 0, 0.7);
-				border: 5px solid #f7347a;
-				font-size: 25px;
-			}
+	.alerts div{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 400px;
+		height: 200px;
+		background-color: rgba(255, 191, 0, 0.7);
+		border: 5px solid #f7347a;
+		font-size: 25px;
+	}
 
-			#end_alert {
+	#end_alert {
                 display: none
             }
 
-			@media screen and (max-width: 620px) {
-				canvas{
-					width: 100%;
-				}
+	@media screen and (max-width: 620px) {
+		canvas{
+			width: 100%;
+		}
 
-				.alerts{
-					top: calc(0px + 30vw);
-				}
+		.alerts{
+			top: calc(0px + 30vw);
+		}
 
-				.alerts div{
-					width: calc(30px + 60vw);
-					height: calc(15px + 30vw);
-					font-size: calc(8px + 3vw);
-				}
+		.alerts div{
+			width: calc(30px + 60vw);
+			height: calc(15px + 30vw);
+			font-size: calc(8px + 3vw);
+		}
 
-				h1 {
-					font-size: calc(5px + 10vw);
-				}   
+		h1 {
+			font-size: calc(5px + 10vw);
+		}   
             }
         
     </style>
@@ -103,10 +103,9 @@
 
     <h4>Press "ESC" to pause the game</h4>
 
-    <canvas width="600" height="800"></canvas>
-     <!-- comment -->
-
-    <h1>0</h1>
+	<canvas width="600" height="800"></canvas>
+	<!-- comment -->
+	<h1>0</h1>
     
     <script>
         
@@ -133,11 +132,11 @@
 
         // alerts - strat/end
         const startAlert = document.querySelector("#start_alert");
-		const endAlert = document.querySelector("#end_alert");
+	const endAlert = document.querySelector("#end_alert");
 
         // background music
         const backgroundAudio = new Audio("Kronicle-Chill Noons.mp3");
-		backgroundAudio.volume = 0.02;
+	backgroundAudio.volume = 0.02;
 
         //player
         let snakeSpeed = tileSize;
@@ -175,8 +174,8 @@
         gameLoop();
         
         function handleTouchStart(evt) {
-        xDown = evt.touches[0].clientX;
-        yDown = evt.touches[0].clientY;
+		xDown = evt.touches[0].clientX;
+		yDown = evt.touches[0].clientY;
       }
 
         /**
@@ -214,14 +213,12 @@
             //    snakePosY = canvas.height;
             // }
             
-            // GAME OVER (crash into myself)
+            // GAME OVER (crash into snake)
             tail.forEach( snakePart => {
                 if (snakePosX === snakePart.x && snakePosY === snakePart.y) {
                     gameOver();
                 }
             });
-
-
 
             // tail
             tail.push({ x: snakePosX, y: snakePosY });
@@ -277,19 +274,17 @@
 
          }
 
-
-         // draw circle
-			function circle(color, x, y, width) {
-				ctx.fillStyle = color;
-				ctx.beginPath();
-				ctx.arc(x+(tileSize/2), y+(tileSize/2), width/2, 0, 2 * Math.PI);
-				ctx.closePath();
-				ctx.fill();
-			}
+	// draw circle
+	function circle(color, x, y, width) {
+		ctx.fillStyle = color;
+		ctx.beginPath();
+		ctx.arc(x+(tileSize/2), y+(tileSize/2), width/2, 0, 2 * Math.PI);
+		ctx.closePath();
+		ctx.fill();
+	}
 
         //draw FOOD
         function drawFood() {
-
             ctx.beginPath();
             ctx.moveTo(foodPosX + tileSize /4, foodPosY + tileSize /2);
             ctx.arc(foodPosX + tileSize /4, foodPosY + tileSize /2, tileSize /2, 0, Math.PI * 0.3);
@@ -343,27 +338,27 @@
          // randomize food position
          function resetFood() {
              
-            // GAME OVER (nowhere to go)
-            if ( snakeLenght === tileCountX * tileCountY ) {
-                gameOver();
-            }
+		// GAME OVER (nowhere to go)
+            	if ( snakeLenght === tileCountX * tileCountY ) {
+			gameOver();
+		}
 
-            foodPosX = Math.floor(Math.random() * tileCountX) * tileSize;
-            foodPosY = Math.floor(Math.random() * tileCountY) * tileSize;
+		foodPosX = Math.floor(Math.random() * tileCountX) * tileSize;
+            	foodPosY = Math.floor(Math.random() * tileCountY) * tileSize;
         
-            // DONT SPAWN FOOD ON SNAKE HEAD
-            if ( foodPosX === snakePosY && foodPosY === snakePosY ) {
-                resetFood();
-            }
+		// DONT SPAWN FOOD ON SNAKE HEAD
+		if ( foodPosX === snakePosY && foodPosY === snakePosY ) {
+			resetFood();
+		}
 
-            // DONT SPAWN FOOD ON ANY SNAKE PART
-            if ( tail.some(
-                (snakePart) => snakePart.x === foodPosX && snakePart.y === foodPosY 
-                ) 
-            ) {
+		// DONT SPAWN FOOD ON ANY SNAKE PART
+		if ( tail.some(
+                	(snakePart) => snakePart.x === foodPosX && snakePart.y === foodPosY 
+		) 
+            	) {
                     resetFood();
-            } 
-        }
+		} 
+	}
 
          // GAME OVER
          // KEYBOARD RESTARTS GAME
@@ -382,68 +377,68 @@
          /**
           * KEYBOARD
           */
-          function keyPush(event) {
+	function keyPush(event) {
+		if (!gameIsRunning && !title.innerHTML.includes('☠') ) {
+			gameIsRunning = true;
+			startAlert.style.display = "none";
+			gameLoop();
+		}
 
-            if (!gameIsRunning && !title.innerHTML.includes('☠') ) {
-					gameIsRunning = true;
-					startAlert.style.display = "none";
-					gameLoop();
-				}
+		// play music after restart
+		if (gameIsRunning){
+			backgroundAudio.play();
+		}
 
-                // play music after restart
-				if (gameIsRunning){
-				backgroundAudio.play();
-				}
+		switch (event.key) {
+                	case "ArrowLeft":
+                	if (velocityX !== 1) {
+                        	velocityX = -1;
+                        	velocityY = 0; 
+                    	}
+                    	break;
+                	case "ArrowUp":
+                    		if (velocityY !== 1) {
+                        		velocityX = 0;
+                        		velocityY = -1; 
+                    		}
+                    	break;
+                	case "ArrowRight":
+                	if (velocityX !== -1) {
+                        	velocityX = 1;
+                        	velocityY = 0; 
+                    	}
+                    	break;                  
+                	case "ArrowDown":
+                	if (velocityY !== -1) {
+				velocityX = 0;
+				velocityY = 1; 
+                    	}
+                    	break;
+                    	default:
 
-            switch (event.key) {
-                case "ArrowLeft":
-                if (velocityX !== 1) {
-                        velocityX = -1;
-                        velocityY = 0; 
-                    }
-                    break;
-                case "ArrowUp":
-                    if (velocityY !== 1) {
-                        velocityX = 0;
-                        velocityY = -1; 
-                    }
-                    break;
-                case "ArrowRight":
-                if (velocityX !== -1) {
-                        velocityX = 1;
-                        velocityY = 0; 
-                    }
-                    break;                  
-                case "ArrowDown":
-                if (velocityY !== -1) {
-                        velocityX = 0;
-                        velocityY = 1; 
-                    }
-                    break;
-                    default:
-
-                    // restart game
-                    if ( ! gameIsRunning ) location.reload();
-                    break;
-                    case "Escape":                       
+                    	// restart game
+                    	if ( ! gameIsRunning ) location.reload();
+                    	break;
+                    	case "Escape":                       
                             pauseGame()
                             break;
-            }
+            	}
           }
-                // write text PAUSED after "ESC"
-                 function drawText(text) {
-                    ctx.font = "80px Comic Sans MS";
-                    ctx.fillStyle = "Black";
-                    ctx.textAlign = "center";
-                    ctx.fillText(text , canvas.width/2, canvas.height/2);
-                 }
+                
+	// write text PAUSED after "ESC"
+	function drawText(text) {
+		ctx.font = "80px Comic Sans MS";
+		ctx.fillStyle = "Black";
+		ctx.textAlign = "center";
+		ctx.fillText(text , canvas.width/2, canvas.height/2);
+	}
 
-                function pauseGame() {
-                    gamePaused = !gamePaused; // toggle the gamePaused value (false <-> true)
-                    drawText("PAUSED")
-                    backgroundAudio.pause();
-                    if (!gamePaused) gameLoop(); // restart loop
-                }
+	function pauseGame() {
+		gamePaused = !gamePaused; // toggle the gamePaused value (false <-> true)
+		drawText("PAUSED")
+		backgroundAudio.pause();
+		if (!gamePaused) gameLoop(); // restart loop
+	}
 
           // grid
           function drawGrid() {
