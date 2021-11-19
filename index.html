@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - JavaScript</title>
+    <style>
+        body {
+            background-image: url('background2hd.jpeg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+            background-size: 100% 100%;
+            /*background: #bada55;*/
+            text-align: center;
+        }
+    
+        .wrapper{
+				position: relative;
+				margin-top: 100px;
+			}
+
+        canvas {
+            border: 10px solid #f7347a;
+        }
+    
+        h1 {
+            margin-top: 0;
+            font-size: 4em;
+            font-family: 'Avenir Next', Verdana; 
+            font-weight: bold;
+            letter-spacing: -10px;
+            color: white;
+        }
+
+        h1 strong {
+            font-size: 1.35em;
+            display: inline-block;
+            margin: 0 0.25em;
+            color: white;
+        }
+
+        h4 {
+                    margin-top: 0;
+                    font-weight: bold;
+                    color:white;
+                }
+
+        /* alerts */
+        .alerts {
+			position: absolute;
+			width: 100%;
+			display: flex;
+			justify-content: center;
+			top: 185px;
+		}
+
+			.alerts div{
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				width: 400px;
+				height: 200px;
+				background-color: rgba(255, 191, 0, 0.7);
+				border: 5px solid #f7347a;
+				font-size: 25px;
+			}
+
+			#end_alert {
+                display: none
+            }
+
+			@media screen and (max-width: 620px) {
+				canvas{
+					width: 100%;
+				}
+
+				.alerts{
+					top: calc(0px + 30vw);
+				}
+
+				.alerts div{
+					width: calc(30px + 60vw);
+					height: calc(15px + 30vw);
+					font-size: calc(8px + 3vw);
+				}
+
+				h1 {
+					font-size: calc(5px + 10vw);
+				}   
+            }
+        
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="alerts">
+            <div id="start_alert"><p>start by click or<br> pressing arrows</p></div>
+            <div id="end_alert"><p>GAME OVER<br>click or press keyboard key</p></div>
+    </div>
+
+    <h4>Press "ESC" to pause the game</h4>
+
+    <canvas width="600" height="800"></canvas>
+     <!-- comment -->
+
+    <h1>0</h1>
+    
+    <script>
+        
+        // canvas
+        const canvas = document.querySelector("canvas");
+        const title = document.querySelector("h1");
+        const ctx = canvas.getContext("2d");
+        
+        // listeners
+        document.addEventListener('keydown', keyPush);
+        document.addEventListener("click", startGame);
+        canvas.addEventListener("click", getClickPositionCanvas);
+
+        // game
+        let gameIsRunning = true;
+        var gamePaused = false;
+
+        var fps = 5;
+        const tileSize = 20;
+        const tileCountX = canvas.width / tileSize;
+        const tileCountY = canvas.height / tileSize;
+
+        let score = 0;
+
+        // alerts - strat/end
+        const startAlert = document.querySelector("#start_alert");
+		const endAlert = document.querySelector("#end_alert");
+
+        // background music
+        const backgroundAudio = new Audio("Kronicle-Chill Noons.mp3");
+		backgroundAudio.volume = 0.02;
+
+        //player
+        let snakeSpeed = tileSize;
+        let snakePosX = 0;
+        let snakePosY = canvas.height / 2;
+
+        let velocityX = 1;
+        let velocityY = 0;
+
+        let tail = [];
+        let snakeLenght = 3;
+
+        // food
+        let foodPosX = 0;
+        let foodPosY = 0;
+
+        // pause at start
+        drawStuff();
+        gameIsRunning = false;
+
+        //loop
+        function gameLoop() {
+            if ( gameIsRunning ) {
+
+                // esc = pause
+                if(gamePaused) return;
+                backgroundAudio.play();
+                drawStuff()
+                moveStuff()
+                setTimeout(gameLoop, 1000 / fps);
+            }
+        }
+
+        resetFood();
+        gameLoop();
+        
+        function handleTouchStart(evt) {
+        xDown = evt.touches[0].clientX;
+        yDown = evt.touches[0].clientY;
+      }
+
+        /**
+         * MOVE EVERYTHING
+         */ 
+        function moveStuff() {
+            snakePosX += snakeSpeed * velocityX;
+            snakePosY += snakeSpeed * velocityY;
+
+            // wall collision
+            if (snakePosX > canvas.width - tileSize) {
+                gameOver();
+            }
+            if (snakePosX < 0) {
+                gameOver();
+            }
+            if (snakePosY > canvas.height - tileSize) {
+                gameOver();
+            }
+            if (snakePosY < 0) {
+               gameOver();
+            }
+
+            // without wall collision
+            // if (snakePosX > canvas.width - tileSize) {
+            //     snakePosX = 0;
+            // }
+            // if (snakePosX < 0) {
+            //     snakePosX = canvas.width;
+            // }
+            // if (snakePosY > canvas.height - tileSize) {
+            //     snakePosY = 0;
+            // }
+            // if (snakePosY < 0) {
+            //    snakePosY = canvas.height;
+            // }
+            
+            // GAME OVER (crash into myself)
+            tail.forEach( snakePart => {
+                if (snakePosX === snakePart.x && snakePosY === snakePart.y) {
+                    gameOver();
+                }
+            });
+
+
+
+            // tail
+            tail.push({ x: snakePosX, y: snakePosY });
+
+            // forget earliest parts of snake
+            tail = tail.slice(-1 * snakeLenght);
+
+            // food collision
+            if (snakePosX === foodPosX && snakePosY === foodPosY) {
+                title.textContent = ++score;
+
+                // FAST AND FURIOUS
+                fps += fps < 50 ? 1 : 0;
+                //fps++
+                //fps = fps * 1.03; 
+                snakeLenght++; 
+                resetFood();
+
+                // add audio after eat food
+                var audio = new Audio("Cymatics.wav");
+                audio.play();
+                audio.volume = 0.01;               
+            }
+        }
+
+        /**
+         * DRAW EVERYTHING
+         */
+         function drawStuff() {
+
+            // background
+            rectangle("#bada55", 0, 0, canvas.width, canvas.height);
+            
+            // grid
+            drawGrid()
+
+            // food
+            drawFood();
+
+            // only rectangle food
+            //rectangle('#00bfff', foodPosX, foodPosY, tileSize, tileSize);
+            
+            // tail
+            tail.forEach(( snakePart) =>
+                circle("gray", snakePart.x, snakePart.y, tileSize)
+            // rectangle("#555", snakePart.x, snakePart.y, tileSize, tileSize)
+            );
+
+            // snake
+            drawSnakeHead();
+            // only rectangle snake head
+            //rectangle("black", snakePosX, snakePosY, tileSize, tileSize);
+
+         }
+
+
+         // draw circle
+			function circle(color, x, y, width) {
+				ctx.fillStyle = color;
+				ctx.beginPath();
+				ctx.arc(x+(tileSize/2), y+(tileSize/2), width/2, 0, 2 * Math.PI);
+				ctx.closePath();
+				ctx.fill();
+			}
+
+        //draw FOOD
+        function drawFood() {
+
+            ctx.beginPath();
+            ctx.moveTo(foodPosX + tileSize /4, foodPosY + tileSize /2);
+            ctx.arc(foodPosX + tileSize /4, foodPosY + tileSize /2, tileSize /2, 0, Math.PI * 0.3);
+            ctx.lineTo(foodPosX + tileSize /4, foodPosY + tileSize /2);
+            ctx.stroke();
+            ctx.fillStyle = "red";
+            ctx.fill();
+    
+            ctx.beginPath();
+            ctx.moveTo(foodPosX + tileSize /4, foodPosY + tileSize /2);
+            ctx.arc(foodPosX + tileSize /4, foodPosY + tileSize /2, tileSize /1.2 /2, 0, Math.PI * 0.3);
+            ctx.lineTo(foodPosX + tileSize /4, foodPosY + tileSize /2);
+            ctx.stroke();
+            ctx.fillStyle = "brown";
+            ctx.fill();
+    
+            ctx.font = "10px Comic Sans MS";
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.fillText("Pizza", foodPosX + tileSize /2, foodPosY + tileSize /3);
+        }
+
+        // draw snakeHead
+        function drawSnakeHead() {
+            ctx.beginPath();
+            ctx.arc(snakePosX + tileSize /2, snakePosY + tileSize /2, tileSize / 2, 0, Math.PI * 2, true); // Outer circle 
+            ctx.fillStyle = "gray"
+            ctx.fill()
+            ctx.beginPath();
+            ctx.moveTo(snakePosX + tileSize /2 - tileSize / 3 , snakePosY + tileSize /2);
+            ctx.arc(snakePosX + tileSize /2, snakePosY + tileSize /2, tileSize / 3, 0, Math.PI, false);  // Mouth (clockwise)   
+            ctx.fillStyle = "red"
+            ctx.fill()
+            ctx.stroke()
+            ctx.beginPath();
+            ctx.moveTo(snakePosX - tileSize /4 + tileSize /2 + (tileSize / 10) /2, snakePosY - tileSize /4 + tileSize /2,);
+            ctx.arc(snakePosX - tileSize /4 + tileSize /2 , snakePosY - tileSize /4 + tileSize /2, tileSize / 10, 0, Math.PI * 2, true);  // Left eye
+            ctx.moveTo(snakePosX + tileSize /4 + tileSize /2 + (tileSize / 10) /2, snakePosY - tileSize /4 + tileSize /2);
+            ctx.arc(snakePosX + tileSize /4 + tileSize /2 , snakePosY - tileSize /4 + tileSize /2, tileSize / 10, 0, Math.PI * 2, true);  // Right eye  
+            ctx.fillStyle = "yellow"
+            ctx.fill()
+            ctx.stroke()
+         }
+
+         // draw rectangle
+         function rectangle(color, x, y, width, height) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+         }
+
+         // randomize food position
+         function resetFood() {
+             
+            // GAME OVER (nowhere to go)
+            if ( snakeLenght === tileCountX * tileCountY ) {
+                gameOver();
+            }
+
+            foodPosX = Math.floor(Math.random() * tileCountX) * tileSize;
+            foodPosY = Math.floor(Math.random() * tileCountY) * tileSize;
+        
+            // DONT SPAWN FOOD ON SNAKE HEAD
+            if ( foodPosX === snakePosY && foodPosY === snakePosY ) {
+                resetFood();
+            }
+
+            // DONT SPAWN FOOD ON ANY SNAKE PART
+            if ( tail.some(
+                (snakePart) => snakePart.x === foodPosX && snakePart.y === foodPosY 
+                ) 
+            ) {
+                    resetFood();
+            } 
+        }
+
+         // GAME OVER
+         // KEYBOARD RESTARTS GAME
+         function gameOver() {
+            title.innerHTML = `☠️<strong> ${score} </strong>☠️`;
+            backgroundAudio.volume = 0;
+            endAlert.style.display = "flex";
+            gameIsRunning = false;
+
+            // add sound after crash to myself or to the wall
+            var audio = new Audio("Mirror_Shattering.mp3");
+            audio.play();
+            audio.volume = 0.01;
+         }
+
+         /**
+          * KEYBOARD
+          */
+          function keyPush(event) {
+
+            if (!gameIsRunning && !title.innerHTML.includes('☠') ) {
+					gameIsRunning = true;
+					startAlert.style.display = "none";
+					gameLoop();
+				}
+
+                // play music after restart
+				if (gameIsRunning){
+				backgroundAudio.play();
+				}
+
+            switch (event.key) {
+                case "ArrowLeft":
+                if (velocityX !== 1) {
+                        velocityX = -1;
+                        velocityY = 0; 
+                    }
+                    break;
+                case "ArrowUp":
+                    if (velocityY !== 1) {
+                        velocityX = 0;
+                        velocityY = -1; 
+                    }
+                    break;
+                case "ArrowRight":
+                if (velocityX !== -1) {
+                        velocityX = 1;
+                        velocityY = 0; 
+                    }
+                    break;                  
+                case "ArrowDown":
+                if (velocityY !== -1) {
+                        velocityX = 0;
+                        velocityY = 1; 
+                    }
+                    break;
+                    default:
+
+                    // restart game
+                    if ( ! gameIsRunning ) location.reload();
+                    break;
+                    case "Escape":                       
+                            pauseGame()
+                            break;
+            }
+          }
+                // write text PAUSED after "ESC"
+                 function drawText(text) {
+                    ctx.font = "80px Comic Sans MS";
+                    ctx.fillStyle = "Black";
+                    ctx.textAlign = "center";
+                    ctx.fillText(text , canvas.width/2, canvas.height/2);
+                 }
+
+                function pauseGame() {
+                    gamePaused = !gamePaused; // toggle the gamePaused value (false <-> true)
+                    drawText("PAUSED")
+                    backgroundAudio.pause();
+                    if (!gamePaused) gameLoop(); // restart loop
+                }
+
+          // grid
+          function drawGrid() {
+            for (let i = 0; i < tileCountX; i++) {
+                for (let j = 0; j < tileCountY; j++) { 
+                rectangle("#fff", tileSize * i, tileSize * j, tileSize - 1, tileSize - 1);
+                }
+            }
+          }
+
+             /**
+			 * CLICK
+			 */
+			function getClickPositionCanvas(event) {
+				// x,y position of click
+				let xPositionClick = event.clientX - getPosition(canvas).x;
+					yPositionClick = event.clientY - getPosition(canvas).y;
+
+				// calibrate snake head
+				let snakePosXCenter = snakePosX + 25,
+					snakePosYCenter = snakePosY + 25;
+
+				// upscale click position for canvas if page resolution is lower then canvas - Mobile
+				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+				if ( vw <= canvas.width){
+					xPositionClick = xPositionClick * (canvas.width/(vw-20));
+					yPositionClick = yPositionClick * (canvas.width/(vw-20));
+				}
+
+				// calculation for selecting direction 
+				let xPositionDiff = xPositionClick-snakePosXCenter,
+					yPositionDiff = yPositionClick-snakePosYCenter;
+				if (xPositionDiff < 0) xPositionDiff = xPositionDiff * -1
+				if (yPositionDiff < 0) yPositionDiff = yPositionDiff * -1
+
+
+				if (xPositionDiff < yPositionDiff) {
+					// up
+					if (snakePosYCenter > yPositionClick) {
+						if (velocityY !== 1) {
+							velocityX = 0;
+							velocityY = -1;
+						}
+					}
+					// down
+					if (snakePosYCenter < yPositionClick) {
+						if (velocityY !== -1) {
+							velocityX = 0;
+							velocityY = 1;
+						}
+					}
+				}
+
+				if (xPositionDiff > yPositionDiff) {
+					// right
+					if (snakePosXCenter < xPositionClick) {
+						if (velocityX !== -1) {
+							velocityX = 1;
+							velocityY = 0;
+						}
+					}
+					//left
+					if (snakePosXCenter > xPositionClick) {
+						if (velocityX !== 1) {
+							velocityX = -1;
+							velocityY = 0;
+						}
+					}
+				}
+			}
+
+            /**
+			 * Start game on click
+			 */
+			function startGame (){
+				if (!gameIsRunning && !title.innerHTML.includes('☠') ) {
+					gameIsRunning = true;
+					startAlert.style.display = "none";
+
+					// music
+					if (gameIsRunning){
+						backgroundAudio.play();
+					}
+					gameLoop();
+				}
+				if (!gameIsRunning && title.innerHTML.includes('☠') ) {
+					endAlert.style.display = "none";
+					location.reload()
+				}
+			}
+
+            /**
+			 * Helper function - get element x, y position
+			 * @param el
+			 * @returns {{x: number, y: number}}
+			 */
+            function getPosition(el) {
+				var xPosition = 0;
+				var yPosition = 0;
+
+				while (el) {
+					if (el.tagName == "BODY") {
+
+						// deal with browser quirks with body/window/document and page scroll
+						var xScrollPos = el.scrollLeft || document.documentElement.scrollLeft;
+						var yScrollPos = el.scrollTop || document.documentElement.scrollTop;
+
+						xPosition += (el.offsetLeft - xScrollPos + el.clientLeft);
+						yPosition += (el.offsetTop - yScrollPos + el.clientTop);
+					} else {
+						xPosition += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+						yPosition += (el.offsetTop - el.scrollTop + el.clientTop);
+					}
+
+					el = el.offsetParent;
+				}
+				return {
+					x: xPosition,
+					y: yPosition
+				};
+			}
+
+    </script>
+</body>
+</html> 
