@@ -395,24 +395,28 @@
                         	velocityX = -1;
                         	velocityY = 0; 
                     	}
+				
                     	break;
                 	case "ArrowUp":
-                    		if (velocityY !== 1) {
-                        		velocityX = 0;
-                        		velocityY = -1; 
-                    		}
+                    	if (velocityY !== 1) {
+                        	velocityX = 0;
+                        	velocityY = -1; 
+                    	}
+				
                     	break;
                 	case "ArrowRight":
                 	if (velocityX !== -1) {
                         	velocityX = 1;
                         	velocityY = 0; 
                     	}
+				
                     	break;                  
                 	case "ArrowDown":
                 	if (velocityY !== -1) {
 				velocityX = 0;
 				velocityY = 1; 
                     	}
+				
                     	break;
                     	default:
 
@@ -440,126 +444,130 @@
 		if (!gamePaused) gameLoop(); // restart loop
 	}
 
-          // grid
-          function drawGrid() {
-            for (let i = 0; i < tileCountX; i++) {
-                for (let j = 0; j < tileCountY; j++) { 
-                rectangle("#fff", tileSize * i, tileSize * j, tileSize - 1, tileSize - 1);
-                }
-            }
+	// grid
+	function drawGrid() {
+		for (let i = 0; i < tileCountX; i++) {
+			for (let j = 0; j < tileCountY; j++) { 
+                	rectangle("#fff", tileSize * i, tileSize * j, tileSize - 1, tileSize - 1);
+                	}
+            	}
           }
 
-             /**
-			 * CLICK
-			 */
-			function getClickPositionCanvas(event) {
-				// x,y position of click
-				let xPositionClick = event.clientX - getPosition(canvas).x;
-					yPositionClick = event.clientY - getPosition(canvas).y;
+	/**
+	  * CLICK
+	  */
+	function getClickPositionCanvas(event) {
+		// x,y position of click
+		let xPositionClick = event.clientX - getPosition(canvas).x;
+		yPositionClick = event.clientY - getPosition(canvas).y;
 
-				// calibrate snake head
-				let snakePosXCenter = snakePosX + 25,
-					snakePosYCenter = snakePosY + 25;
+		// calibrate snake head
+		let snakePosXCenter = snakePosX + 25,
+		snakePosYCenter = snakePosY + 25;
 
-				// upscale click position for canvas if page resolution is lower then canvas - Mobile
-				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-				if ( vw <= canvas.width){
-					xPositionClick = xPositionClick * (canvas.width/(vw-20));
-					yPositionClick = yPositionClick * (canvas.width/(vw-20));
-				}
+		// upscale click position for canvas if page resolution is lower then canvas - Mobile
+		let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+			if ( vw <= canvas.width){
+				xPositionClick = xPositionClick * (canvas.width/(vw-20));
+				yPositionClick = yPositionClick * (canvas.width/(vw-20));
+			}
 
-				// calculation for selecting direction 
-				let xPositionDiff = xPositionClick-snakePosXCenter,
-					yPositionDiff = yPositionClick-snakePosYCenter;
-				if (xPositionDiff < 0) xPositionDiff = xPositionDiff * -1
-				if (yPositionDiff < 0) yPositionDiff = yPositionDiff * -1
+			// calculation for selecting direction 
+			let xPositionDiff = xPositionClick-snakePosXCenter,
+			yPositionDiff = yPositionClick-snakePosYCenter;
+			if (xPositionDiff < 0) xPositionDiff = xPositionDiff * -1
+			if (yPositionDiff < 0) yPositionDiff = yPositionDiff * -1
 
-
-				if (xPositionDiff < yPositionDiff) {
-					// up
-					if (snakePosYCenter > yPositionClick) {
-						if (velocityY !== 1) {
-							velocityX = 0;
-							velocityY = -1;
-						}
-					}
-					// down
-					if (snakePosYCenter < yPositionClick) {
-						if (velocityY !== -1) {
-							velocityX = 0;
-							velocityY = 1;
-						}
+			if (xPositionDiff < yPositionDiff) {
+				// up
+				if (snakePosYCenter > yPositionClick) {
+					if (velocityY !== 1) {
+						velocityX = 0;
+						velocityY = -1;
 					}
 				}
 
-				if (xPositionDiff > yPositionDiff) {
-					// right
-					if (snakePosXCenter < xPositionClick) {
-						if (velocityX !== -1) {
-							velocityX = 1;
-							velocityY = 0;
-						}
-					}
-					//left
-					if (snakePosXCenter > xPositionClick) {
-						if (velocityX !== 1) {
-							velocityX = -1;
-							velocityY = 0;
-						}
+				// down
+				if (snakePosYCenter < yPositionClick) {
+					if (velocityY !== -1) {
+					velocityX = 0;
+					velocityY = 1;
 					}
 				}
 			}
 
-            /**
-			 * Start game on click
-			 */
-			function startGame (){
-				if (!gameIsRunning && !title.innerHTML.includes('☠') ) {
-					gameIsRunning = true;
-					startAlert.style.display = "none";
-
-					// music
-					if (gameIsRunning){
-						backgroundAudio.play();
+			if (xPositionDiff > yPositionDiff) {
+				// right
+				if (snakePosXCenter < xPositionClick) {
+					if (velocityX !== -1) {
+						velocityX = 1;
+						velocityY = 0;
 					}
-					gameLoop();
 				}
-				if (!gameIsRunning && title.innerHTML.includes('☠') ) {
-					endAlert.style.display = "none";
-					location.reload()
+	
+				//left
+				if (snakePosXCenter > xPositionClick) {
+					if (velocityX !== 1) {
+					velocityX = -1;
+					velocityY = 0;
 				}
 			}
+		}
+	}
 
-            /**
-			 * Helper function - get element x, y position
-			 * @param el
-			 * @returns {{x: number, y: number}}
-			 */
-            function getPosition(el) {
-				var xPosition = 0;
-				var yPosition = 0;
+	/**
+	  * Start game on click
+	  */
+	function startGame (){
+		if (!gameIsRunning && !title.innerHTML.includes('☠') ) {
+			gameIsRunning = true;
+			startAlert.style.display = "none";
 
-				while (el) {
-					if (el.tagName == "BODY") {
-
-						// deal with browser quirks with body/window/document and page scroll
-						var xScrollPos = el.scrollLeft || document.documentElement.scrollLeft;
-						var yScrollPos = el.scrollTop || document.documentElement.scrollTop;
-
-						xPosition += (el.offsetLeft - xScrollPos + el.clientLeft);
-						yPosition += (el.offsetTop - yScrollPos + el.clientTop);
-					} else {
-						xPosition += (el.offsetLeft - el.scrollLeft + el.clientLeft);
-						yPosition += (el.offsetTop - el.scrollTop + el.clientTop);
-					}
-
-					el = el.offsetParent;
-				}
-				return {
-					x: xPosition,
-					y: yPosition
-				};
+			// music
+			if (gameIsRunning){
+			backgroundAudio.play();
 			}
+			
+			gameLoop();
+		}
+		
+		if (!gameIsRunning && title.innerHTML.includes('☠') ) {
+			endAlert.style.display = "none";
+			location.reload()
+		}
+	}
+
+	/**
+	  * Helper function - get element x, y position
+	  * @param el
+	  * @returns {{x: number, y: number}}
+	  */
+	function getPosition(el) {
+		var xPosition = 0;
+		var yPosition = 0;
+
+		while (el) {
+			if (el.tagName == "BODY") {
+
+				// deal with browser quirks with body/window/document and page scroll
+				var xScrollPos = el.scrollLeft || document.documentElement.scrollLeft;
+				var yScrollPos = el.scrollTop || document.documentElement.scrollTop;
+
+				xPosition += (el.offsetLeft - xScrollPos + el.clientLeft);
+				yPosition += (el.offsetTop - yScrollPos + el.clientTop);
+			} else {
+				xPosition += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+				yPosition += (el.offsetTop - el.scrollTop + el.clientTop);
+			}
+
+			el = el.offsetParent;
+		}
+		
+		return {
+			x: xPosition,
+			y: yPosition
+		};
+	}
 
     </script>
 </body>
